@@ -25,33 +25,29 @@ import hashlib
 import pandas as pd
 from pathlib import Path
 
-USERS_CSV = "users.csv"
+USERS_CSV = Path("users.csv")
 
-
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-
-def authenticate_user(username, password):
-    if not Path(USERS_CSV).exists():
+def authenticate_user(username, plain_password):
+    if not USERS_CSV.exists():
         return False, None
 
     df = pd.read_csv(USERS_CSV)
 
-    REQUIRED_COLS = {"username", "password"}
+    REQUIRED_COLS = {"username", "password", "role", "email", "phone"}
     if not REQUIRED_COLS.issubset(df.columns):
         st.error(f"users.csv must contain columns: {REQUIRED_COLS}")
         return False, None
 
-    user_row = df[df["username"] == username]
-    if user_row.empty:
+    rows = df[df["username"] == username]
+    if rows.empty:
         return False, None
 
-    row = user_row.iloc[0]
-    hashed_input = hash_password(password)
+    user = rows.iloc[0].to_dict()
 
-    if str(row["password"]) != hashed_input:
-        return False, None
+    if verify_password(plain_password, user["password"]):
+        return True, user
+
+    return False, None
 
     return True, row.to_dict()
 
