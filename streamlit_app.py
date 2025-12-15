@@ -21,6 +21,38 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import uuid
 
+import hashlib
+import pandas as pd
+from pathlib import Path
+
+USERS_CSV = "users.csv"
+
+
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def authenticate_user(username, password):
+    """
+    Returns (True, user_dict) if credentials valid
+    Returns (False, None) if invalid
+    """
+    if not Path(USERS_CSV).exists():
+        return False, None
+
+    df = pd.read_csv(USERS_CSV)
+
+    if username not in df["username"].values:
+        return False, None
+
+    row = df[df["username"] == username].iloc[0]
+    hashed_input = hash_password(password)
+
+    if row["password"] != hashed_input:
+        return False, None
+
+    return True, row.to_dict()
+
 # ---------- Session State Defaults ----------
 defaults = {
     "logged_in": False,
