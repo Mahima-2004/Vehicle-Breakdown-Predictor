@@ -268,6 +268,7 @@ def send_sms_alert_twilio(message, to_phone):
         ACCOUNT_SID = st.secrets.get("TWILIO_SID", os.getenv("TWILIO_SID"))
         AUTH_TOKEN  = st.secrets.get("TWILIO_TOKEN", os.getenv("TWILIO_TOKEN"))
         FROM_PHONE  = st.secrets.get("TWILIO_FROM", os.getenv("TWILIO_FROM"))
+        TO_PHONE  = st.secrets.get("TWILIO_TO", os.getenv("TWILIO_TO"))
 
         if not ACCOUNT_SID or not AUTH_TOKEN or not FROM_PHONE:
             return False, "Twilio credentials missing"
@@ -892,6 +893,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
