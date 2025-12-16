@@ -270,17 +270,7 @@ if "username" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state["role"] = None
 
-def login_user(username, password):
-    u = get_user(username)
-    if u is None:
-        return False, "User not found"
-    if verify_password(password, u["hashed_password"]):
-        st.session_state["logged_in"] = True
-        st.session_state["username"] = username
-        st.session_state["role"] = u.get("role", "user")
-        return True, "Logged in"
-    else:
-        return False, "Invalid credentials"
+
 
 def logout_user():
     st.session_state["logged_in"] = False
@@ -374,7 +364,7 @@ with st.sidebar:
             lu = st.text_input("Username", key="login_user")
             lp = st.text_input("Password", type="password", key="login_pass")
             if st.button("Log in"):
-                ok,msg = login_user(lu.strip(), lp.strip())
+                ok, user = authenticate_user(lu.strip(), lp.strip())
                 if ok:
                     st.success("Logged in ✅")
                     st.rerun()
