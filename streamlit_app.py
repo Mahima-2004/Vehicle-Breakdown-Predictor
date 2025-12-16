@@ -580,7 +580,7 @@ if predict_idx is not None:
                             user = get_user(st.session_state["username"])
                             phone = user.get("phone","")
                             if phone:
-                                ok,info = send_sms_alert_twilio(f"ALERT: Breakdown risk {proba:.2f}", phone)
+                                ok,info = send_whatsapp_alert_twilio(f"ALERT: Breakdown risk {proba:.2f}", phone)
                                 if ok:
                                     st.info(f"SMS alert sent (SID: {info})")
                                 else:
@@ -897,6 +897,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
