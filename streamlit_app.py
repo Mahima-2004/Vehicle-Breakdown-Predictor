@@ -267,7 +267,6 @@ def send_whatsapp_alert_twilio(message, to_phone):
         ACCOUNT_SID = st.secrets.get("TWILIO_SID")
         AUTH_TOKEN  = st.secrets.get("TWILIO_TOKEN")
         FROM_PHONE = st.secrets.get("TWILIO_FROM")
-        FALLBACK_TO  = st.secrets.get("TWILIO_TO")
 
         if not ACCOUNT_SID or not AUTH_TOKEN or not FROM_PHONE:
             return False, "Twilio WhatsApp credentials missing"
@@ -897,6 +896,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
