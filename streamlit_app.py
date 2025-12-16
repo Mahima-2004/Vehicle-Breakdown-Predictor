@@ -273,13 +273,13 @@ def send_sms_alert_twilio(message, to_phone):
         from twilio.rest import Client
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
-        msg = client.messages.create(
+        user = client.messages.create(
             body=message[:140],   # Trial-safe length
             from_=FROM_PHONE,
             to=to_phone
         )
 
-        return True, msg.sid
+        return True, user.sid
 
     except Exception as e:
         return False, str(e)
@@ -366,11 +366,11 @@ with st.sidebar:
                 if not reg_user or not reg_pass or not reg_name:
                     st.error("Username, name and password are required")
                 else:
-                    ok,msg = add_user(reg_user.strip(), reg_name.strip(), reg_email.strip(), reg_phone.strip(), reg_pass.strip(), reg_role)
+                    ok,user = add_user(reg_user.strip(), reg_name.strip(), reg_email.strip(), reg_phone.strip(), reg_pass.strip(), reg_role)
                     if ok:
                         st.success("Registered successfully. Please login.")
                     else:
-                        st.error(msg)
+                        st.error("Invalid username or password")
     else:
         u = get_user(st.session_state["username"])
         st.subheader(u.get("name",""))
@@ -670,11 +670,11 @@ if profile_idx is not None:
             new_email = st.text_input("Email", value=user.get("email",""))
             new_phone = st.text_input("Phone (E.164)", value=user.get("phone",""))
             if st.button("Save profile"):
-                ok,msg = update_user_profile(user["username"], name=new_name, email=new_email, phone=new_phone)
+                ok,user = update_user_profile(user["username"], name=new_name, email=new_email, phone=new_phone)
                 if ok:
                     st.success("Profile updated.")
                 else:
-                    st.error(msg)
+                    st.error("Invalid username or password")
             st.markdown("---")
             st.subheader("My prediction history")
             hist = pd.read_csv(PREDICTION_LOG)
@@ -755,9 +755,9 @@ if admin_idx is not None:
         st.header("Admin Dashboard")
         st.subheader("Users")
         conn = get_db()
-	udf = pd.read_sql("SELECT username, name, email, phone, role, created_at FROM users", conn)
-	conn.close()
-	st.dataframe(udf)
+        udf = pd.read_sql("SELECT username, name, email, phone, role, created_at FROM users", conn)
+        conn.close()
+        st.dataframe(udf)
 
         st.markdown("Create user (admin)")
         a_user = st.text_input("Username (admin create)", key="a_user")
@@ -770,11 +770,11 @@ if admin_idx is not None:
             if not a_user or not a_pass:
                 st.error("Provide username and password")
             else:
-                ok,msg = add_user(a_user, a_name, a_email, a_phone, a_pass, a_role)
+                ok,user = add_user(a_user, a_name, a_email, a_phone, a_pass, a_role)
                 if ok:
                     st.success("User created")
                 else:
-                    st.error(msg)
+                    st.error("Invalid username or password")
         st.markdown("---")
         st.subheader("Feedback (all users)")
         fdf = pd.read_csv(FEEDBACK_CSV)
