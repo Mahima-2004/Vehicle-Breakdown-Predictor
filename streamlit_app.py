@@ -400,7 +400,7 @@ with st.sidebar:
                 if not phone:
                     st.warning("Set phone in profile first.")
                 else:
-                    ok,info = send_sms_alert_twilio("Test alert from Vehicle App", phone)
+                    ok,info = send_whatsapp_alert_twilio("Test alert from Vehicle App", phone)
                     if ok:
                         st.success(f"Test SMS sent (SID: {info})")
                     else:
@@ -897,6 +897,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
