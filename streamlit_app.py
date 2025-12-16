@@ -27,29 +27,28 @@ from pathlib import Path
 
 USERS_CSV = Path("users.csv")
 
-def authenticate_user(username, plain_password):
-    if not USERS_CSV.exists():
+def authenticate_user(username, password):
+    if not Path(USERS_CSV).exists():
         return False, None
 
     df = pd.read_csv(USERS_CSV)
 
-    REQUIRED_COLS = {"username", "password", "role", "email", "phone"}
+    REQUIRED_COLS = {"username", "hashed_password"}
     if not REQUIRED_COLS.issubset(df.columns):
-        st.error(f"users.csv must contain columns: {REQUIRED_COLS}")
+        st.error("users.csv schema is invalid")
         return False, None
 
-    rows = df[df["username"] == username]
-    if rows.empty:
+    user_row = df[df["username"] == username]
+    if user_row.empty:
         return False, None
 
-    user = rows.iloc[0].to_dict()
+    row = user_row.iloc[0]
 
-    if verify_password(plain_password, user["password"]):
-        return True, user
-
-    return False, None
+    if not verify_password(password, row["hashed_password"]):
+        return False, None
 
     return True, row.to_dict()
+
 
 
 # ---------- Session State Defaults ----------
@@ -118,56 +117,7 @@ SMS_THRESHOLD = float(os.getenv("SMS_THRESHOLD", 0.8))
 def show_login_register_page():
     st.title("🔐 User Authentication")
 
-    tab_login, tab_register = st.tabs(["Login", "Register"])
 
-    # ---------------- LOGIN ----------------
-    with tab_login:
-        st.subheader("Login")
-
-        login_user = st.text_input(
-            "Username",
-            key="auth_login_user"
-        )
-        login_pass = st.text_input(
-            "Password",
-            type="password",
-            key="auth_login_pass"
-        )
-
-        if st.button("Login", key="auth_login_btn"):
-            ok, user = authenticate_user(login_user, login_pass)
-            if ok:
-                st.session_state["logged_in"] = True
-                st.session_state["username"] = user["username"]
-                st.session_state["role"] = user["role"]
-                st.success("Login successful")
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
-
-    # ---------------- REGISTER ----------------
-    with tab_register:
-        st.subheader("Register")
-
-        r_user = st.text_input("Username", key="auth_reg_user")
-        r_name = st.text_input("Full Name", key="auth_reg_name")
-        r_email = st.text_input("Email", key="auth_reg_email")
-        r_phone = st.text_input("Phone (+91...)", key="auth_reg_phone")
-        r_pass = st.text_input("Password", type="password", key="auth_reg_pass")
-
-        if st.button("Register", key="auth_reg_btn"):
-            ok, msg = add_user_to_csv(
-                r_user.strip(),
-                r_name.strip(),
-                r_email.strip(),
-                r_phone.strip(),
-                r_pass.strip(),
-                "user"
-            )
-            if ok:
-                st.success("Registration successful. Please login.")
-            else:
-                st.error(msg)
 
 
 
@@ -479,11 +429,7 @@ else:
 if not st.session_state["logged_in"]:
     show_login_register_page()
     st.stop()
-else:
-    tabs_list = ["Home","Predict","Batch Upload","Analytics & Explainability","My Profile","Feedback"]
-    if st.session_state["role"] == "admin":
-        tabs_list.append("Admin")
-    tabs = st.tabs(tabs_list)
+
 
 # create tabs
 tabs = st.tabs(tabs_list)
