@@ -601,7 +601,7 @@ if batch_idx is not None:
         uploaded = st.file_uploader("Upload CSV (columns must match expected inputs)", type=["csv"])
         if uploaded:
             try:
-                df_in = pd.read_csv(uploaded, encoding="latin1")
+                df_in = pd.read_csv(uploaded, encoding="utf-8", engine="python", sep=None)
                 missing = set(input_cols) - set(df_in.columns)
                 if missing:
                     st.error(f"Missing columns: {missing}")
@@ -892,6 +892,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
