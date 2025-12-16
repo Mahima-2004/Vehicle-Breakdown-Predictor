@@ -227,8 +227,8 @@ def load_model(path):
 model = load_model(MODEL_PATH)
 
 # Load dataset (if present) for smart inputs
-df = pd.read_excel("vehicle_breakdown_prediction_dataset.xlsx")
-df.to_csv("vehicle_breakdown_prediction_dataset.csv", index=False)
+
+
 
 def load_dataset(path):
     try:
@@ -895,5 +895,6 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
