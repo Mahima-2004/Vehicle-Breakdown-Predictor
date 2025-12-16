@@ -262,22 +262,25 @@ def logout_user():
     st.session_state["role"] = None
 
 # ----------------- Twilio SMS (secure, user-aware) -----------------
-def send_sms_alert_twilio(message, to_phone):
+def send_whatsapp_alert_twilio(message, to_phone):
     try:
-        # 1️⃣ Load credentials safely
-        ACCOUNT_SID = st.secrets.get("TWILIO_SID", os.getenv("TWILIO_SID"))
-        AUTH_TOKEN  = st.secrets.get("TWILIO_TOKEN", os.getenv("TWILIO_TOKEN"))
-        FROM_PHONE  = st.secrets.get("TWILIO_FROM", os.getenv("TWILIO_FROM"))
-        FALLBACK_TO  = st.secrets.get("TWILIO_TO", os.getenv("TWILIO_TO"))
+        ACCOUNT_SID = st.secrets.get("TWILIO_SID")
+        AUTH_TOKEN  = st.secrets.get("TWILIO_TOKEN")
+        FROM_PHONE = st.secrets.get("TWILIO_FROM")
+        FALLBACK_TO  = st.secrets.get("TWILIO_TO")
 
         if not ACCOUNT_SID or not AUTH_TOKEN or not FROM_PHONE:
-            return False, "Twilio credentials missing"
+            return False, "Twilio WhatsApp credentials missing"
 
         from twilio.rest import Client
         client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
+        # WhatsApp requires prefix
+        if not to_phone.startswith("whatsapp:"):
+            to_phone = "whatsapp:" + to_phone
+
         msg = client.messages.create(
-            body=message[:140],   # Trial-safe length
+            body=message,
             from_=FROM_PHONE,
             to=to_phone
         )
@@ -286,6 +289,7 @@ def send_sms_alert_twilio(message, to_phone):
 
     except Exception as e:
         return False, str(e)
+
 
 
 
@@ -893,6 +897,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
