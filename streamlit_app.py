@@ -153,11 +153,12 @@ def authenticate_user(username, password):
     conn.close()
 
     if not row:
-        return False, None
+        return False, "User not found"
 
     if row[4] != hash_password(password):
-        return False, None
+        return False, "Wrong password"
 
+    # ✅ RETURN USER DICT
     return True, {
         "username": row[0],
         "name": row[1],
@@ -165,6 +166,7 @@ def authenticate_user(username, password):
         "phone": row[3],
         "role": row[5]
     }
+
 def get_user(username):
     conn = get_db()
     cur = conn.cursor()
@@ -346,12 +348,16 @@ with st.sidebar:
             lu = st.text_input("Username", key="login_user")
             lp = st.text_input("Password", type="password", key="login_pass")
             if st.button("Log in"):
-                ok, user = authenticate_user(lu.strip(), lp.strip())
+                ok, result = authenticate_user(lu.strip(), lp.strip())
+
                 if ok:
+                    st.session_state["logged_in"] = True
+                    st.session_state["username"] = result["username"]
+                    st.session_state["role"] = result["role"]
                     st.success("Logged in ✅")
                     st.rerun()
                 else:
-                    st.error("Invalid username or password")
+                    st.error(result)
             st.markdown("---")
             st.write("New user? Choose Register from this sidebar.")
         else:
@@ -370,7 +376,7 @@ with st.sidebar:
                     if ok:
                         st.success("Registered successfully. Please login.")
                     else:
-                        st.error("Invalid username or password")
+                        st.error(msg)
     else:
         u = get_user(st.session_state["username"])
         st.subheader(u.get("name",""))
