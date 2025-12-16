@@ -189,6 +189,8 @@ def update_user_profile(username, name, email, phone):
     """, (name, email, phone, username))
     conn.commit()
     conn.close()
+    return True, "Profile updated"
+
 
 
 
@@ -196,26 +198,6 @@ def update_user_profile(username, name, email, phone):
 
 
 # ----------------- UTILITIES -----------------
-def hash_password(plain: str) -> str:
-    if BCRYPT_AVAILABLE:
-        return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
-    salt = os.getenv("APP_SALT", "changeme_salt")
-    return hashlib.sha256((salt + plain).encode()).hexdigest()
-
-def verify_password(plain: str, hashed: str) -> bool:
-    if BCRYPT_AVAILABLE:
-        try:
-            return bcrypt.checkpw(plain.encode(), hashed.encode())
-        except Exception:
-            return False
-    salt = os.getenv("APP_SALT", "changeme_salt")
-    return hashlib.sha256((salt + plain).encode()).hexdigest() == hashed
-
-
-
-
-
-
 
 
 def save_feedback(username, rating, comment):
@@ -369,7 +351,7 @@ with st.sidebar:
                     st.success("Logged in ✅")
                     st.rerun()
                 else:
-                    st.error(msg)
+                    st.error("Invalid username or password")
             st.markdown("---")
             st.write("New user? Choose Register from this sidebar.")
         else:
@@ -772,8 +754,11 @@ if admin_idx is not None:
     with tabs[admin_idx]:
         st.header("Admin Dashboard")
         st.subheader("Users")
-        udf = read_users_df()
-        st.dataframe(udf)
+        conn = get_db()
+	udf = pd.read_sql("SELECT username, name, email, phone, role, created_at FROM users", conn)
+	conn.close()
+	st.dataframe(udf)
+
         st.markdown("Create user (admin)")
         a_user = st.text_input("Username (admin create)", key="a_user")
         a_name = st.text_input("Name (admin create)", key="a_name")
