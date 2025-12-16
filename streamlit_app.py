@@ -24,30 +24,11 @@ import uuid
 import hashlib
 import pandas as pd
 from pathlib import Path
+import sqlite3
 
-USERS_CSV = Path("users.csv")
 
-def authenticate_user(username, password):
-    if not Path(USERS_CSV).exists():
-        return False, None
 
-    df = pd.read_csv(USERS_CSV)
 
-    REQUIRED_COLS = {"username", "hashed_password"}
-    if not REQUIRED_COLS.issubset(df.columns):
-        st.error("users.csv schema is invalid")
-        return False, None
-
-    user_row = df[df["username"] == username]
-    if user_row.empty:
-        return False, None
-
-    row = user_row.iloc[0]
-
-    if not verify_password(password, row["hashed_password"]):
-        return False, None
-
-    return True, row.to_dict()
 
 
 
@@ -122,19 +103,97 @@ def show_login_register_page():
 
 
 # -------------------------------------------------------------------------------------------
+DB_PATH = "app.db"
 
+def get_db():
+    return sqlite3.connect(DB_PATH, check_same_thread=False)
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            username TEXT PRIMARY KEY,
+            name TEXT,
+            email TEXT,
+            phone TEXT,
+            password TEXT,
+            role TEXT,
+            created_at TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+def hash_password(pw):
+    return hashlib.sha256(pw.encode()).hexdigest()
+def add_user(username, name, email, phone, password, role="user"):
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("SELECT 1 FROM users WHERE username=?", (username,))
+    if cur.fetchone():
+        conn.close()
+        return False, "Username already exists"
+
+    cur.execute(
+        "INSERT INTO users VALUES (?,?,?,?,?,?,?)",
+        (username, name, email, phone, hash_password(password), role, datetime.now().isoformat())
+    )
+    conn.commit()
+    conn.close()
+    return True, "User registered"
+
+def authenticate_user(username, password):
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        return False, None
+
+    if row[4] != hash_password(password):
+        return False, None
+
+    return True, {
+        "username": row[0],
+        "name": row[1],
+        "email": row[2],
+        "phone": row[3],
+        "role": row[5]
+    }
+def get_user(username):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=?", (username,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "username": row[0],
+        "name": row[1],
+        "email": row[2],
+        "phone": row[3],
+        "role": row[5]
+    }
+def update_user_profile(username, name, email, phone):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE users SET name=?, email=?, phone=?
+        WHERE username=?
+    """, (name, email, phone, username))
+    conn.commit()
+    conn.close()
 
 
 
 # Create CSVs if missing with headers
-def ensure_csv(path: Path, headers):
-    if not path.exists():
-        pd.DataFrame(columns=headers).to_csv(path, index=False)
 
-ensure_csv(USERS_CSV, ["username","name","email","phone","hashed_password","role","created_at"])
-ensure_csv(FEEDBACK_CSV, ["username","rating","comment","timestamp"])
-ensure_csv(PREDICTION_LOG, ["username","timestamp","prediction","probability","inputs_json"])
-ensure_csv(AUTO_ALERT_LOG, ["unique_id","timestamp","probability"])
 
 # ----------------- UTILITIES -----------------
 def hash_password(plain: str) -> str:
@@ -152,49 +211,12 @@ def verify_password(plain: str, hashed: str) -> bool:
     salt = os.getenv("APP_SALT", "changeme_salt")
     return hashlib.sha256((salt + plain).encode()).hexdigest() == hashed
 
-def read_users_df():
-    return pd.read_csv(USERS_CSV)
 
-def add_user_to_csv(username, name, email, phone, plain_password, role="user"):
-    df = read_users_df()
-    if username in df["username"].astype(str).tolist():
-        return False, "Username already exists"
-    hashed = hash_password(plain_password)
-    new = {
-        "username": username,
-        "name": name,
-        "email": email,
-        "phone": phone,
-        "hashed_password": hashed,
-        "role": role,
-        "created_at": datetime.now().isoformat()
-    }
-    df = pd.concat([df, pd.DataFrame([new])], ignore_index=True)
-    df.to_csv(USERS_CSV, index=False)
-    return True, "User registered"
 
-def update_user_profile(username, name=None, email=None, phone=None, role=None):
-    df = read_users_df()
-    if username not in df["username"].astype(str).tolist():
-        return False, "User not found"
-    idx = df.index[df["username"] == username][0]
-    if name is not None:
-        df.at[idx, "name"] = name
-    if email is not None:
-        df.at[idx, "email"] = email
-    if phone is not None:
-        df.at[idx, "phone"] = phone
-    if role is not None:
-        df.at[idx, "role"] = role
-    df.to_csv(USERS_CSV, index=False)
-    return True, "Profile updated"
 
-def get_user(username):
-    df = read_users_df()
-    rows = df[df["username"] == username]
-    if rows.empty:
-        return None
-    return rows.iloc[0].to_dict()
+
+
+
 
 def save_feedback(username, rating, comment):
     df = pd.read_csv(FEEDBACK_CSV)
@@ -372,7 +394,7 @@ with st.sidebar:
                 if not reg_user or not reg_pass or not reg_name:
                     st.error("Username, name and password are required")
                 else:
-                    ok,msg = add_user_to_csv(reg_user.strip(), reg_name.strip(), reg_email.strip(), reg_phone.strip(), reg_pass.strip(), reg_role)
+                    ok,msg = add_user(reg_user.strip(), reg_name.strip(), reg_email.strip(), reg_phone.strip(), reg_pass.strip(), reg_role)
                     if ok:
                         st.success("Registered successfully. Please login.")
                     else:
@@ -773,7 +795,7 @@ if admin_idx is not None:
             if not a_user or not a_pass:
                 st.error("Provide username and password")
             else:
-                ok,msg = add_user_to_csv(a_user, a_name, a_email, a_phone, a_pass, a_role)
+                ok,msg = add_user(a_user, a_name, a_email, a_phone, a_pass, a_role)
                 if ok:
                     st.success("User created")
                 else:
