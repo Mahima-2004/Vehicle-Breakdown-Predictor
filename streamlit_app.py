@@ -79,7 +79,7 @@ st.set_page_config(page_title="Vehicle Breakdown Predictor - Integrated", layout
 # ----------------- CONFIG PATHS -----------------
 PROJECT_ROOT = Path(".")
 MODEL_PATH = PROJECT_ROOT / "rf_pipeline.pkl"
-DATA_PATH = PROJECT_ROOT / "vehicle_breakdown_prediction_dataset.xlsx"
+DATA_PATH = PROJECT_ROOT / "vehicle_breakdown_prediction_dataset.csv"
 USERS_CSV = PROJECT_ROOT / "users.csv"
 FEEDBACK_CSV = PROJECT_ROOT / "feedback.csv"
 PREDICTION_LOG = PROJECT_ROOT / "prediction_log.csv"
@@ -892,6 +892,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
