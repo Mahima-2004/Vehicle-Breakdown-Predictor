@@ -96,22 +96,19 @@ def add_bg_from_local(image_file):
     import base64
     with open(image_file, "rb") as img_file:
         encoded = base64.b64encode(img_file.read()).decode()
-
     st.markdown(
         f"""
         <style>
         .stApp {{
             background: 
-                linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
+                linear-gradient(
+                    rgba(0, 0, 0, 0.55),
+                    rgba(0, 0, 0, 0.55)
+                ),
                 url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-        }}
-
-        /* Make all text readable */
-        dev {{
-            color: #ffffff !important;
         }}
         </style>
         """,
@@ -119,6 +116,7 @@ def add_bg_from_local(image_file):
     )
 
 add_bg_from_local("background.jpg")
+
 
 
 
@@ -934,6 +932,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
