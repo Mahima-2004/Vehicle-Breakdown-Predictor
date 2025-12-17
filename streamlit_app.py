@@ -108,12 +108,18 @@ def add_bg_from_local(image_file):
             background-position: center;
             background-repeat: no-repeat;
         }}
+
+        /* Make all text readable */
+        label, div {{
+            color: #ffffff !important;
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
 add_bg_from_local("background.jpg")
+
 
 
 # Minimal polished dark CSS — paste after st.set_page_config
@@ -928,6 +934,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
