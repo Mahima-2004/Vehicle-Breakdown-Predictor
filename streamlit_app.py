@@ -97,7 +97,7 @@ def add_bg_image():
         """
         <style>
         .stApp {
-            background-image: url("assets/background.png");
+            background-image: url("assets/background.jpg");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -931,6 +931,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
