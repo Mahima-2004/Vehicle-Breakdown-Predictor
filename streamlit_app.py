@@ -102,39 +102,23 @@ def add_bg_from_local(image_file):
         <style>
         .stApp {{
             background: 
-                linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+                linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)),
                 url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }}
 
-        /* Force all text to be readable */
-        h1, h2, h3, h4, h5, h6, p, span, label {{
-            color: #FFFFFF !important;
+        /* Make all text readable */
+        h1, h2, h3, h4, h5, h6, p, span, label, div {{
+            color: #ffffff !important;
         }}
-
-        /* Sidebar text */
-        section[data-testid="stSidebar"] * {{
-            color: white !important;
-        }}
-
-        /* Tabs text */
-        button[data-baseweb="tab"] {{
-            color: white !important;
-        }}
-
         </style>
         """,
         unsafe_allow_html=True
     )
 
-
 add_bg_from_local("background.jpg")
-
-
-
-
 
 
 # Minimal polished dark CSS — paste after st.set_page_config
@@ -949,6 +933,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
