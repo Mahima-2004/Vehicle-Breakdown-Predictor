@@ -110,7 +110,7 @@ def add_bg_from_local(image_file):
         }}
 
         /* Make all text readable */
-        label {{
+        dev {{
             color: #ffffff !important;
         }}
         </style>
@@ -934,6 +934,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
