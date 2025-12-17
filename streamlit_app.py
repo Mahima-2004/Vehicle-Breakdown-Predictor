@@ -90,6 +90,24 @@ SMS_THRESHOLD = float(os.getenv("SMS_THRESHOLD", 0.8))
 
 # ----------------- Mobile-style Dark Mode (paste right after st.set_page_config) -----------------
 # Remove any older dark-mode CSS first so there are no conflicts.
+def set_background_image(image_path):
+    with open(image_path, "rb") as f:
+        encoded = f.read()
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url("data:image/png;base64,{encoded.hex()}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+set_background_image("background.jpg")
 
 # Minimal polished dark CSS — paste after st.set_page_config
 def show_login_register_page():
@@ -903,6 +921,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
