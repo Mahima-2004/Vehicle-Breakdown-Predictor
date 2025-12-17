@@ -229,9 +229,16 @@ model = load_model(MODEL_PATH)
 
 def load_dataset(path):
     try:
-        return pd.read_excel(path)
-    except Exception:
+        if path.suffix.lower() == ".csv":
+            return pd.read_csv(path)
+        elif path.suffix.lower() in [".xlsx", ".xls"]:
+            return pd.read_excel(path)
+        else:
+            return None
+    except Exception as e:
+        st.warning(f"Dataset load failed: {e}")
         return None
+
 
 df_data = load_dataset(DATA_PATH)
 if df_data is not None:
@@ -896,6 +903,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
