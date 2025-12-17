@@ -92,28 +92,25 @@ SMS_THRESHOLD = float(os.getenv("SMS_THRESHOLD", 0.8))
 
 # ----------------- Mobile-style Dark Mode (paste right after st.set_page_config) -----------------
 # Remove any older dark-mode CSS first so there are no conflicts.
-def add_bg_image():
+def add_bg_from_local(image_file):
+    import base64
+    with open(image_file, "rb") as img_file:
+        encoded = base64.b64encode(img_file.read()).decode()
     st.markdown(
-        """
+        f"""
         <style>
-        .stApp {
-            background-image: url("assets/background.jpg");
+        .stApp {{
+            background-image: url("data:image/jpg;base64,{encoded}");
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-        }
-
-        .block-container {
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 2rem;
-            border-radius: 12px;
-        }
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-add_bg_image()
+add_bg_from_local("background.jpg")
 
 
 
@@ -931,6 +928,7 @@ if admin_idx is not None:
 # ----------------- Footer -----------------
 st.markdown("---")
 st.caption("Notes: Passwords are hashed before storage. For production, use a proper DB and hosted auth (Firebase/Auth0). Keep Twilio and other secrets in environment variables.")
+
 
 
 
